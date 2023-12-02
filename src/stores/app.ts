@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+// 创建小仓库
 import { defineStore } from 'pinia'
 
 export const useAppStore = defineStore({

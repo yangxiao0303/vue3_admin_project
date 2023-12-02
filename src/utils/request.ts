@@ -1,8 +1,9 @@
-import axios, { type AxiosResponse } from 'axios';
+import axios, { type AxiosRequestConfig, type AxiosRequestHeaders, type AxiosResponse } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
+// 引入大仓库
 import pinia from '@/stores/index';
+// 引入用户小仓库
 import { useUserInfoStore } from '../stores/userInfo';
-
 /* 定义response对象的data接口 */
 interface ResponseData<T> {
   code: number;
@@ -18,8 +19,15 @@ const service = axios.create({
 
 // 添加请求拦截器
 service.interceptors.request.use(
-	(config) => {
-    
+	(config: AxiosRequestConfig) => {
+    // 获取用户小仓库内的数据
+		const userInfoStore = useUserInfoStore(pinia);
+		// 如果有 token 
+		if (userInfoStore.token){
+			// 给配置对象的请求头带上 token
+			(config.headers as AxiosRequestHeaders).token = userInfoStore.token;
+		}
+
 		return config;
 	}
 );
