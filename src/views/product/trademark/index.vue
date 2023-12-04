@@ -31,8 +31,8 @@
   <el-dialog v-model="dialogVisite" style="top:100px" title="添加品牌">
     <!-- 表单 -->
     <!-- 校验 三个属性 model:校验的信息在哪个对象上 rules: 自定义校验的规则 prop: 校验对象上的具体哪个属性 -->
-    <el-form label-width="100px" style="width:80%" :model="tmParams" :rules="rules" prop="tmName" ref="formRef">
-      <el-form-item label="品牌名称">
+    <el-form label-width="100px" style="width:80%" :model="tmParams" :rules="rules" ref="formRef">
+      <el-form-item label="品牌名称" prop="tmName">
         <el-input placeholder="请你输入品牌名称" v-model="tmParams.tmName"></el-input>
       </el-form-item>
       <el-form-item label="品牌LOGO" prop="logoUrl">
@@ -64,7 +64,7 @@
 // 引入 + 图标
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 // 引入 ref 响应式函数
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 // 引入 element-plus 提供的提示框组件
 import { ElMessage } from 'element-plus';
 // 引入类型
@@ -127,27 +127,41 @@ const addTrademark = () => {
   tmParams.value.logoUrl = '';
   //显示对话框
   dialogVisite.value = true;
+  // 移除校验结果,初次的子组件El-form并未渲染完毕,所以要用nextTick()
+  nextTick(() => {
+    formRef.value.clearValidate('tmName');
+    formRef.value.clearValidate('logoUrl');
+  });
+  // 或者可以利用ts的特性
+  // formRef.value?.clearValidate('tmName');
+  // formRef.value?.clearValidate('logoUrl');
 }
 
 // ----------上传文件的回调和参数-----------
 // 上传照片之前的钩子函数
+//上传文件组件:上传文件成功之前钩子,约束上传文件的大小与文件格式
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (file: any) => {
-  if (file.type !== 'image/jpeg' || file.type !== 'image/png' || file.type !== 'image/gif') {
-    ElMessage({
-      type: "error",
-      message: "文件格式只能为'jpeg','png'和'gif'"
-    })
-    return false;
-  } else {
-    if (file.size > (1024 ^ 2 * 2)) {
+  //注入上传文件对象
+  //上传文件格式:png|jpg|gif 且不能大于2M
+  if (file.type == 'image/png' || file.type == 'image/jpeg' || file.type == 'image/gif') {
+
+    if (file.size / 1024 / 1024 < 2) {
+      return true;
+    } else {
       ElMessage({
-        type: "error",
-        message: "文件过大,请重新上传"
+        type: 'error',
+        message: '文件过大'
       })
       return false;
-    } else {
-      return true;
     }
+
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '文件格式不正确'
+    })
+    //文件格式不对
+    return false;
   }
 }
 // 上传照片成功的钩子函数
@@ -157,6 +171,8 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => 
 
   // 将获取到的地址赋值给 tmParams
   tmParams.value.logoUrl = response.data;
+  // 图片上传成功:清除图片没有上传的校验结果
+  formRef.value.clearValidate('logoUrl');
   ElMessage({
     type: "success",
     message: "文件上传成功"
@@ -168,7 +184,7 @@ const confirm = async () => {
   // 点击确定,校验表单文件
   // validate 函数会调用写好的校验函数 validateTmName, validateLogoUrl
   // 此函数会返回一个Promise对象, 如为失败状态的promise. await 等待不到成功的结果, 后面不会执行.
-  await formRef.value.validate(); 
+  await formRef.value.validate();
   try {
     // 发送请求,增加新的商标
     await reqAddOrUpdateTrademark(tmParams.value);
@@ -212,7 +228,7 @@ const rules = {
     { required: true, trigger: 'blur', validator: validateTmName }
   ],
   logoUrl: [
-    {required: true, validator: validateLogoUrl}
+    { required: true, validator: validateLogoUrl }
   ]
 }
 

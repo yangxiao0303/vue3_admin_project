@@ -20,8 +20,8 @@ export const reqTrademarkList = (page: number, limit: number) =>
 // 添加或更新品牌的接口数据
 export const reqAddOrUpdateTrademark = (data:Trademark)=>{
   if(data.id){
-    return request.put<any,any>(API_URL.ADD_TRADEMARK, data);
+    return request.put<any,any>(API_URL.UPDATE_TRADEMARK, data);
   } else {
-    return request.post<any,any>(API_URL.UPDATE_TRADEMARK, data);
+    return request.post<any,any>(API_URL.ADD_TRADEMARK, data);
   }
 }
