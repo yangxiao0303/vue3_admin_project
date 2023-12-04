@@ -1,6 +1,6 @@
 // 定义商标的类型
 export interface Trademark {
-  id: number;
+  id?: number;
   tmName: string;
   logoUrl: string;
 }

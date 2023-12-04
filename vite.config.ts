@@ -42,7 +42,7 @@ export default defineConfig((mode: ConfigEnv) => {
     server: {
       proxy:{
         "/app-dev":{
-          target: 'http://sph-h5-api.atguigu.cnp',
+          target: 'http://sph-h5-api.atguigu.cn',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/app-dev/,""),
         }
