@@ -16,9 +16,14 @@
         </template>
       </el-table-column>
       <el-table-column prop="address" label="品牌操作">
-        <template #default="scope">
-          <el-button size="small" type="warning" :icon="Edit" @click=""></el-button>
-          <el-button size="small" type="danger" :icon="Delete" @click=""></el-button>
+        <template #="{ row, $index }">
+          <el-button size="small" type="warning" :icon="Edit" @click="updateTrademark(row)"></el-button>
+          <el-popconfirm @confirm="handler(row.id)" :title="`你确定要删除${row.tmName}?`" width="250px" icon-color="red"
+            :icon="Delete">
+            <template #reference>
+              <el-button size="small" type="danger" :icon="Delete" @click=""></el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -28,7 +33,7 @@
       :total="total" />
   </el-card>
   <!-- 对话框 -->
-  <el-dialog v-model="dialogVisite" style="top:100px" title="添加品牌">
+  <el-dialog v-model="dialogVisite" style="top:100px" :title="tmParams.id ? '更新品牌' : '添加品牌'">
     <!-- 表单 -->
     <!-- 校验 三个属性 model:校验的信息在哪个对象上 rules: 自定义校验的规则 prop: 校验对象上的具体哪个属性 -->
     <el-form label-width="100px" style="width:80%" :model="tmParams" :rules="rules" ref="formRef">
@@ -72,7 +77,7 @@ import type { TrademarkList, TrademarkResponseData, Trademark } from '@/api/prod
 // 引入element-plus提供的类型
 import type { UploadProps } from 'element-plus'
 // 引入 请求数据的 API 函数
-import { reqTrademarkList, reqAddOrUpdateTrademark } from '@/api/product/trademark'
+import { reqTrademarkList, reqAddOrUpdateTrademark, reqDeleteTrademark } from '@/api/product/trademark'
 
 // 当前页面
 const currentPage = ref<number>(1);
@@ -125,6 +130,7 @@ const addTrademark = () => {
   //立马清空上一次收集到数据
   tmParams.value.tmName = '';
   tmParams.value.logoUrl = '';
+  tmParams.value.id = 0;
   //显示对话框
   dialogVisite.value = true;
   // 移除校验结果,初次的子组件El-form并未渲染完毕,所以要用nextTick()
@@ -188,8 +194,8 @@ const confirm = async () => {
   try {
     // 发送请求,增加新的商标
     await reqAddOrUpdateTrademark(tmParams.value);
-    // 更新本地的商标数据
-    getTrademarkList();
+    // 更新本地的商标数据: 如是更新,保留当前页,如是增加,返回第一页
+    getTrademarkList(tmParams.value.id ? currentPage.value : 1);
     // 关闭对话框
     dialogVisite.value = false;
     // 提示
@@ -232,6 +238,36 @@ const rules = {
   ]
 }
 
+// --------------------更新商标与删除现有商标--------------------
+const updateTrademark = (row: Trademark) => {
+  // 弹出对话框
+  dialogVisite.value = true;
+  // 在页面中展示对应的商标
+  tmParams.value.id = row.id;
+  tmParams.value.tmName = row.tmName;
+  tmParams.value.logoUrl = row.logoUrl;
+}
+
+// 弹出确认框的回调
+const handler = async (id: Trademark["id"]) => {
+  try {
+    //删除已有品牌成功
+    await reqDeleteTrademark(id);
+    //再次获取最新的品牌的数据
+    getTrademarkList(trademarkArr.value.length > 1 ? currentPage.value : currentPage.value - 1);
+    //提示消息
+    ElMessage({
+      type: 'success',
+      message: '操作成功'
+    })
+
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: '操作失败'
+    })
+  }
+}
 </script>
 
 <style scoped>
