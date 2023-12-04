@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv, type ConfigEnv } from "vite";
-import {resolve} from 'path'
+import path, {resolve} from 'path'
 
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
@@ -38,5 +38,15 @@ export default defineConfig((mode: ConfigEnv) => {
         ],
       },
     },
+    // 配置代理跨域
+    server: {
+      proxy:{
+        "/app-dev":{
+          target: 'http://sph-h5-api.atguigu.cnp',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/app-dev/,""),
+        }
+      }
+    }
   };
 });
