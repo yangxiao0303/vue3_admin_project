@@ -15,6 +15,8 @@ import './styles/index.scss'
 import ElSvg from './components/SvgIcon/ElSvg'
 // 引入路由鉴权
 import './permission'
+// 引入全局组件
+import Category from '@/components/Category/index.vue'
 const app = createApp(App)
 ElSvg(app)
 app.use(pinia)
@@ -22,4 +24,5 @@ app.use(pinia)
   .use(ElementPlus, {
     locale: zhCn,
   })
+  .component('Category',Category)// 挂载全局组件
   .mount('#app')
