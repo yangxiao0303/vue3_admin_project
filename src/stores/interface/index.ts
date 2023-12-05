@@ -14,4 +14,9 @@ import type { CategoryResponseData } from "@/api/product/attr/types";
 export interface CategoryState {
   c1Arr: CategoryResponseData;
   c1Id: string | number;
+  c2Arr: CategoryResponseData;
+  c2Id: string | number;
+  c3Arr: CategoryResponseData;
+  c3Id: string | number;
+  
 }
